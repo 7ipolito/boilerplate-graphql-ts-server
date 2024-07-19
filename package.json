@@ -1,0 +1,28 @@
+{
+   "name": "graphql-ts-server-boilerplate",
+   "version": "0.0.1",
+   "description": "Awesome project developed with TypeORM.",
+   "type": "commonjs",
+   "devDependencies": {
+      "@types/node": "^20.14.11",
+      "@types/uuid": "^10.0.0",
+      "ts-node": "10.9.2",
+      "typescript": "5.5.3"
+   },
+   "dependencies": {
+      "@graphql-tools/graphql-file-loader": "^8.0.1",
+      "@graphql-tools/load": "^8.0.2",
+      "@graphql-tools/schema": "^10.0.4",
+      "graphql": "^16.9.0",
+      "graphql-yoga": "^5.6.1",
+      "nodemon": "^3.1.4",
+      "pg": "^8.12.0",
+      "reflect-metadata": "^0.2.2",
+      "typeorm": "0.3.20",
+      "uuid": "^10.0.0"
+   },
+   "scripts": {
+      "start": "nodemon --exec ts-node src/index.ts",
+      "typeorm": "typeorm-ts-node-commonjs"
+   }
+}
