@@ -22,6 +22,7 @@ export const resolvers: IResolvers = {
         email,
         password: hashedPassword,
       });
+      
 
       await user.save()
 

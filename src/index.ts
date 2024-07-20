@@ -5,13 +5,11 @@ import { join } from 'node:path';
 import { AppDataSource } from './data-source';
 import { resolvers } from './resolvers';
 
-async function startServer() {
-  // Carrega o schema GraphQL do arquivo
+export const startServer = async () => {
   const typeDefs = loadSchemaSync(join(__dirname, 'schema.graphql'), {
     loaders: [new GraphQLFileLoader()],
   });
 
-  // Cria a instância do Apollo Server
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -19,7 +17,6 @@ async function startServer() {
 
   await AppDataSource.initialize();
 
-  // Inicia o servidor Apollo
   const { url } = await server.listen({ port: 4000 });
 
   console.info(`Server is running on ${url}`);

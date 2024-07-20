@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
       "target": "es6",
-      "module": "commonjs",
+      "moduleResolution": "Node",
       "strict": true,
       "jsx": "preserve",
       "esModuleInterop": true,
@@ -9,7 +9,7 @@
       "forceConsistentCasingInFileNames": true,
       "outDir": "./dist",
       "rootDir": "./src",
-      "moduleResolution": "node",
+   
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true
   },
