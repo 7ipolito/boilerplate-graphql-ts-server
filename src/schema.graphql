@@ -1,7 +1,19 @@
+
+type User {
+  id: ID!
+  email: String!
+  password: String!
+}
+
 type Query {
-  hello: String
+users: [User!]!
+}
+
+type Mutation {
+  register(email: String!, password: String!): Boolean!
 }
 
 schema {
   query: Query
+  mutation: Mutation
 }
