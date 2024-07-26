@@ -1,6 +1,6 @@
 import { hash } from "bcryptjs";
-import { User } from "./entity/User";
 import { IResolvers } from "@graphql-tools/utils";
+import { User } from "../../entity/User";
 
 interface RegisterArgs {
   email: string;
@@ -8,15 +8,18 @@ interface RegisterArgs {
 }
 
 export const resolvers: IResolvers = {
-  Query:{
-    users: async (): Promise<User[]> => {
-      const user = await User.find()
-      return user;
-    },
-  },
   Mutation: {
-    register: async (_: any, args: RegisterArgs): Promise<boolean> => {
+    register: async (_: any, args: RegisterArgs): Promise<any> => {
       const { email, password } = args;
+      const userAlreadyExists = await User.findOne({where:{email}, select:["id"]})
+      if(userAlreadyExists){
+        return [
+          {
+            path: "email",
+            message:"already taken"
+          }
+        ]
+      }
       const hashedPassword = await hash(password, 10);
       const user = User.create({
         email,
@@ -26,7 +29,7 @@ export const resolvers: IResolvers = {
 
       await user.save()
 
-      return true;
+      return null;
     },
   },
 };
