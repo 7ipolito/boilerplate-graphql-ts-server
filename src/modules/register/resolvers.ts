@@ -4,6 +4,7 @@ import { User } from "../../entity/User";
 import * as yup from "yup"
 import { formatYupError } from "../../utils/formatYupError";
 import { duplicateEmail, emailNotLongEnough, invalidEmail, passwordNotLongEnough } from "./errorMessages";
+import { createConfirmEmailLink } from "../../utils/createConfirmEmailLink";
 
 const schema = yup.object().shape({
   email: yup.string().min(3, emailNotLongEnough).max(255).email(invalidEmail),
@@ -16,7 +17,7 @@ interface RegisterArgs {
 
 export const resolvers: IResolvers = {
   Mutation: {
-    register: async (_: any, args: RegisterArgs): Promise<any> => {
+    register: async (_: any, args: RegisterArgs, {redis,url}): Promise<any> => {
       try {
         await schema.validate(args, {abortEarly:false})
       } catch (err:any) {
@@ -33,13 +34,15 @@ export const resolvers: IResolvers = {
         ]
       }
       const hashedPassword = await hash(password, 10);
-      const user = User.create({
+      const user:any = User.create({
         email,
         password: hashedPassword,
       });
       
 
       await user.save()
+
+      const link = await createConfirmEmailLink(url, user.id, redis);
 
       return null;
     },
