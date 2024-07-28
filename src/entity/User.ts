@@ -8,6 +8,8 @@ export class User extends BaseEntity{
 
     @Column("text") password: string | undefined
 
+    @Column("boolean", {default:false}) confirmed: boolean | undefined;
+
 
 
 }

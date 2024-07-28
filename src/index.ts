@@ -6,7 +6,10 @@ import { AppDataSource } from './data-source';
 import * as fs from 'fs';
 import { GraphQLSchema, printSchema } from 'graphql';
 import { makeExecutableSchema, mergeSchemas } from '@graphql-tools/schema';
-
+import Redis from 'ioredis';
+import express from "express"
+import { User } from './entity/User';
+import { request } from 'node:http';
 export const startServer = async () => {
   const schemas:GraphQLSchema[] =[];
   const folders = fs.readdirSync(path.join(__dirname, './modules'))
@@ -21,10 +24,27 @@ export const startServer = async () => {
 
 
   }))
+
   
+  const redis = new Redis() 
+  const app = express();
+
   const server = new ApolloServer({
-    schema:mergeSchemas({schemas})
+    schema:mergeSchemas({schemas}),
+    context:({request})=>({redis, url: request.protocol + "://" + request.get("host")})
   });
+
+  app.get("/confirm/:id", async (req:any, res:any)=>{
+    const {id} = req.params;
+    const userId:any = await redis.get(id)
+    if(userId){
+      await User.update({id:userId},{confirmed:true})
+      res.send("ok")
+    }else{
+      res.send("invalid")
+    }
+    
+  })
 
   await AppDataSource.initialize();
 
