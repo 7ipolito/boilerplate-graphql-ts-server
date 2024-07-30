@@ -5,7 +5,8 @@ import * as yup from "yup"
 import { formatYupError } from "../../utils/formatYupError";
 import { duplicateEmail, emailNotLongEnough, invalidEmail, passwordNotLongEnough } from "./errorMessages";
 import { createConfirmEmailLink } from "../../utils/createConfirmEmailLink";
-
+import { sendEmail } from "../../utils/sendEmail";
+import {v4} from "uuid"
 const schema = yup.object().shape({
   email: yup.string().min(3, emailNotLongEnough).max(255).email(invalidEmail),
   password: yup.string().min(3, passwordNotLongEnough).max(255)
@@ -35,14 +36,15 @@ export const resolvers: IResolvers = {
       }
       const hashedPassword = await hash(password, 10);
       const user:any = User.create({
+        id:v4(),
         email,
         password: hashedPassword,
       });
       
 
       await user.save()
-
-      const link = await createConfirmEmailLink(url, user.id, redis);
+      
+      await sendEmail(email, await createConfirmEmailLink(url, user.id, redis))
 
       return null;
     },
