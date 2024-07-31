@@ -1,7 +1,8 @@
 import { Redis } from "ioredis";
 
-export interface Session {
-  save(_: (err: any) => void): unknown;
+export interface Session  {
+  save(arg0: (err: any) => void): unknown;
+  destroy(arg0: (err: any) => any): any;
   userId?: string;
 }
 
