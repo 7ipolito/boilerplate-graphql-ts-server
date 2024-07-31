@@ -4,6 +4,7 @@ import { User } from "../../entity/User";
 import * as yup from "yup"
 import { formatYupError } from "../../utils/formatYupError";
 import { confirmEmailError, invalidLogin } from "./errorMessages";
+import { ResolverMap } from "../../types/graphql-utils";
 
 const errorResponse =[
   {
@@ -17,36 +18,51 @@ interface LoginArgs {
   password: string;
 }
 
-export const resolvers: IResolvers = {
+export const resolvers: ResolverMap = {
   Mutation: {
-    login: async (_: any, args: LoginArgs,
-      {session}
-      //  {redis,url}
-      ): Promise<any> => {
-        const {email, password} = args;
-        const user = await User.findOne({where:{email}})
+    login: async (
+      _,
+      { email, password }: LoginArgs,
+      { session }
+    ) => {
+      const user = await User.findOne({ where: { email } });
 
-        if(!user){
-          return errorResponse
-        }
-
-        // if(!user.confirmed){
-        //   return [{
-        //     path:"email",
-        //     message: confirmEmailError
-
-        //   }]
-        // }
-
-        const valid =  bcrypt.compare(password, String(user.password));
-        if(!valid){
-          return errorResponse
-        }
-         console.log(session)
-       session.userId = user.id
-        
-      return session;
-        
-
+      if (!user) {
+        return errorResponse;
       }
+
+      // if (!user.confirmed) {
+      //   return [
+      //     {
+      //       path: "email",
+      //       message: confirmEmailError
+      //     }
+      //   ];
+      // }
+
+      const valid = bcrypt.compare(password, String(user.password));
+
+      if (!valid) {
+        return errorResponse;
+      }
+
+      // login sucessful
+
+      session.userId = user.id;
+      
+      await new Promise((resolve, reject) => {
+        session.save(err => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(null);
+          }
+        });
+      });
+
+
+      console.log(session)
+
+      return null;
+    }
   }}

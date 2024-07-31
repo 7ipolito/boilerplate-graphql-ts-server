@@ -1,4 +1,4 @@
-import { ApolloServer } from 'apollo-server';
+import { ApolloServer } from 'apollo-server-express';
 import { loadSchemaSync } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 import path, { join } from 'node:path';
@@ -9,15 +9,11 @@ import { makeExecutableSchema, mergeSchemas } from '@graphql-tools/schema';
 import Redis from 'ioredis';
 import express from 'express';
 import session, { SessionOptions } from 'express-session';
-import connectRedis from 'connect-redis';
+import Redistore from 'connect-redis';
 import { redis } from './redis';
 import { User } from './entity/User';
 import { Request, Response } from 'express';
 
-const redisClient = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379', 10),
-});
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'default_secret';
 
@@ -43,33 +39,27 @@ export const startServer = async () => {
 
   const app = express();
 
-  const RedisStore = require("connect-redis").default;
 
   app.use(
     session({
-      store: new RedisStore({
-        client: redisClient,
-      }) as any,
-      name: 'qid',
+      store: new Redistore({
+        client: redis as any,
+      }),
+      name: "qid",
       secret: SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-      },
-    } as SessionOptions)
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+      }
+    } as any)
   );
-
-  const cors = {
-    credentials: true,
-    origin: 'http://localhost:3000',
-  };
 
   app.get('/confirm/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
-    const userId = await redisClient.get(id);
+    const userId = await redis.get(id);
     if (userId) {
       await User.update({ id: userId }, { confirmed: true });
       res.send('ok');
@@ -82,16 +72,27 @@ export const startServer = async () => {
 
   const server = new ApolloServer({
     schema: mergeSchemas({ schemas }),
-    context: ({ req }: { req: Request }): MyContext => {
-      return {
-        redis,
-        req,
-        url: `${req.protocol}://${req.get('host')}`,
-        session: req.session,
-      };
+    
+    context: ({ req }) => {
+      return { redis, req,url: `${req.protocol}://${req.get('host')}`, session:req.session }
+  }
+    
+  });
+  
+
+  
+
+  await server.start();
+
+  server.applyMiddleware({
+    app,
+    cors: {
+      origin: 'https://studio.apollographql.com',
+      credentials: true,
     },
   });
 
-  const { url } = await server.listen({ port: 4000, cors });
-  console.info(`Server is running on ${url}`);
+  app.listen(4000, () => {
+    console.info(`Server is running on http://localhost:4000${server.graphqlPath}`);
+  });
 };

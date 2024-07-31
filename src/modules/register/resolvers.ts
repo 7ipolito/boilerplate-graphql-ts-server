@@ -6,6 +6,7 @@ import { formatYupError } from "../../utils/formatYupError";
 import { duplicateEmail, emailNotLongEnough, invalidEmail, passwordNotLongEnough } from "./errorMessages";
 import { createConfirmEmailLink } from "../../utils/createConfirmEmailLink";
 import { sendEmail } from "../../utils/sendEmail";
+import { ResolverMap } from "../../types/graphql-utils";
 const schema = yup.object().shape({
   email: yup.string().min(3, emailNotLongEnough).max(255).email(invalidEmail),
   password: yup.string().min(3, passwordNotLongEnough).max(255)
@@ -15,7 +16,7 @@ interface RegisterArgs {
   password: string;
 }
 
-export const resolvers: IResolvers = {
+export const resolvers: ResolverMap = {
   Mutation: {
     register: async (_: any, args: RegisterArgs,
       //  {redis,url}
