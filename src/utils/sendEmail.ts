@@ -18,8 +18,6 @@ const transporter = nodemailer.createTransport({
   host: 'smtp.ethereal.email',
   port: 587,
   auth: {
-      user: '',
-      pass: ''
   }
 });
 export const sendEmail =  async (recipient:string, url:string)=>{
