@@ -2,7 +2,7 @@ import {v4} from "uuid";
 import {Redis} from 'ioredis'
 import { forgotPasswordPrefix } from "../constants";
 
-export const createConfirmEmailLink = async (
+export const createForgotPasswordLink = async (
   url:string,
   userId:string,
   redis:Redis
