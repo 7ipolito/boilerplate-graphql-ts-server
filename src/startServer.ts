@@ -6,7 +6,7 @@ import { AppDataSource } from './data-source';
 import * as fs from 'fs';
 import { GraphQLSchema } from 'graphql';
 import { makeExecutableSchema, mergeSchemas } from '@graphql-tools/schema';
-import Redis from 'ioredis';
+import Redis, { Command } from 'ioredis';
 import express from 'express';
 import session, { SessionOptions } from 'express-session';
 import Redistore from 'connect-redis';
@@ -14,7 +14,8 @@ import { redis } from './redis';
 import { User } from './entity/User';
 import { Request, Response } from 'express';
 import { redisSessionPrefix } from './constants';
-
+const rateLimit = require("express-rate-limit")
+import RateLimitRedisStore from 'rate-limit-redis';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'default_secret';
 
@@ -40,6 +41,17 @@ export const startServer = async () => {
 
   const app = express();
 
+  const rateLimiter = rateLimit({
+    store: new RateLimitRedisStore({
+      sendCommand: async (cmd: string, ...args: (string | number)[]) => {
+        return redis.call(cmd, ...args) as any; 
+      },
+    }),
+    windowMs: 15 * 60 * 1000, // Janela de 15 minutos
+    max: 100, // Limite de 100 requisições por janela por IP
+    message: 'Too many requests from this IP, please try again later.',
+  });
+  app.use(rateLimiter)
 
   app.use(
     session({
