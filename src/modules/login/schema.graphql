@@ -1,7 +1,5 @@
-type Error{
-  path:String!
-  message:String!
-}
+# import Error from "../../shared.graphql"
+
 
 type Query{
   bye2:String

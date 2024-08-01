@@ -1,7 +1,5 @@
-type Error{
-  path:String!
-  message:String!
-}
+# import Error from "../../shared.graphql"
+
 type Mutation{
   sendForgotPasswordEmail(email:String!): Boolean
   forgotPasswordChange(newPassword: String!, key: String!) : [Error!]
