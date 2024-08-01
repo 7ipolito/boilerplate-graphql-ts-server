@@ -13,6 +13,7 @@ import Redistore from 'connect-redis';
 import { redis } from './redis';
 import { User } from './entity/User';
 import { Request, Response } from 'express';
+import { redisSessionPrefix } from './constants';
 
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'default_secret';
@@ -44,6 +45,7 @@ export const startServer = async () => {
     session({
       store: new Redistore({
         client: redis as any,
+        prefix: redisSessionPrefix
       }),
       name: "qid",
       secret: SESSION_SECRET,

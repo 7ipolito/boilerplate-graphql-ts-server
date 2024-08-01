@@ -5,6 +5,7 @@ import * as yup from "yup"
 import { formatYupError } from "../../utils/formatYupError";
 import { confirmEmailError, invalidLogin } from "./errorMessages";
 import { ResolverMap } from "../../types/graphql-utils";
+import { redisSessionPrefix, userSessionIdPrefix } from "../../constants";
 
 const errorResponse =[
   {
@@ -23,7 +24,7 @@ export const resolvers: ResolverMap = {
     login: async (
       _,
       { email, password }: LoginArgs,
-      { session }
+      { session, redis , req}
     ) => {
       const user = await User.findOne({ where: { email } });
 
@@ -49,7 +50,7 @@ export const resolvers: ResolverMap = {
       // login sucessful
 
       session.userId = user.id;
-      
+     
       await new Promise((resolve, reject) => {
         session.save(err => {
           if (err) {
@@ -59,6 +60,12 @@ export const resolvers: ResolverMap = {
           }
         });
       });
+
+      if(req.sessionID){
+        await redis.lpush(`${userSessionIdPrefix}${user.id}`, req.sessionID)
+      }
+
+      redis.get(`${redisSessionPrefix}${req.sessionID}`)
 
 
       console.log(session)
