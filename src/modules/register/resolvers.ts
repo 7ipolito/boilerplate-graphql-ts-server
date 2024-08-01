@@ -4,7 +4,7 @@ import { User } from "../../entity/User";
 import * as yup from "yup"
 import { formatYupError } from "../../utils/formatYupError";
 import { duplicateEmail, emailNotLongEnough, invalidEmail, passwordNotLongEnough } from "./errorMessages";
-import { createConfirmEmailLink } from "../../utils/createConfirmEmailLink";
+import { createConfirmEmailLink } from "../../utils/createForgotPasswordLink";
 import { sendEmail } from "../../utils/sendEmail";
 import { ResolverMap } from "../../types/graphql-utils";
 const schema = yup.object().shape({

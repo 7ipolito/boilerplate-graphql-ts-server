@@ -6,6 +6,7 @@ import { formatYupError } from "../../utils/formatYupError";
 import { confirmEmailError, invalidLogin } from "./errorMessages";
 import { ResolverMap } from "../../types/graphql-utils";
 import { redisSessionPrefix, userSessionIdPrefix } from "../../constants";
+import { forgotPasswordLockAccount } from "../../utils/forgotPasswordLockAccount";
 
 const errorResponse =[
   {
@@ -31,15 +32,25 @@ export const resolvers: ResolverMap = {
       if (!user) {
         return errorResponse;
       }
+      
 
       // if (!user.confirmed) {
-      //   return [
-      //     {
-      //       path: "email",
-      //       message: confirmEmailError
-      //     }
-      //   ];
+        // return [
+        //   {
+        //     path: "email",
+        //     message: confirmEmailError
+        //   }
+        // ];
       // }
+
+      if(user.forgotPasswordLocked){
+        return [
+          {
+            path: "email",
+            message: forgotPasswordLockAccount
+          }
+        ];
+      }
 
       const valid = bcrypt.compare(password, String(user.password));
 
